@@ -2,6 +2,15 @@
 
 #include "cJSON/cJSON.h"
 
+void write_to_file(char* filepath, char* data)
+{
+    FILE* fp = fopen(filepath, "ab");
+    if (fp != NULL) {
+        fputs(data, fp);
+        fclose(fp);
+    }
+}
+
 int main(int argc, char** argv, char** envp)
 {
     char* reddit_id = getenv("REDDIT_ID");
@@ -23,10 +32,14 @@ int main(int argc, char** argv, char** envp)
 
     struct string_list* thread_list = __rvg_get_subreddit_threads(&reddit, "emacs");
 
-    cJSON* json = cJSON_Parse(thread_list->list[0]);
-    char* string = cJSON_Print(json);
+    for (int i = 0; i < thread_list->size; i++) {
+        cJSON* json = cJSON_Parse(thread_list->list[i]);
+        char* json_fmt = cJSON_Print(json);
 
-    fprintf(stdout, "%s\n", string);
+        write_to_file("", json_fmt);
+
+        fprintf(stdout, "%s\n", json_fmt);
+    }
 
     return 0;
 }
