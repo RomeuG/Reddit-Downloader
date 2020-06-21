@@ -1,5 +1,7 @@
 #include "rvg_reddit.h"
 
+#include "cJSON/cJSON.h"
+
 int main(int argc, char** argv, char** envp)
 {
     char* reddit_id = getenv("REDDIT_ID");
@@ -20,6 +22,11 @@ int main(int argc, char** argv, char** envp)
     __rvg_get_access_token(&reddit);
 
     struct string_list* thread_list = __rvg_get_subreddit_threads(&reddit, "emacs");
+
+    cJSON* json = cJSON_Parse(thread_list->list[0]);
+    char* string = cJSON_Print(json);
+
+    fprintf(stdout, "%s\n", string);
 
     return 0;
 }
