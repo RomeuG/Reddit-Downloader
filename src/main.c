@@ -2,6 +2,8 @@
 
 #include "cJSON/cJSON.h"
 
+#include <unistd.h>
+
 void write_to_file(char* filepath, char* data)
 {
     FILE* fp = fopen(filepath, "ab");
@@ -30,7 +32,8 @@ int main(int argc, char** argv, char** envp)
 
     __rvg_get_access_token(&reddit);
 
-    struct string_list* thread_list = __rvg_get_subreddit_threads(&reddit, "emacs");
+    struct string_list* thread_names = malloc(sizeof(struct string_list));
+    struct string_list* thread_list = __rvg_get_subreddit_threads(&reddit, "emacs", thread_names);
 
     for (int i = 0; i < thread_list->size; i++) {
         cJSON* json = cJSON_Parse(thread_list->list[i]);
