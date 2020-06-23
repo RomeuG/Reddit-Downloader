@@ -447,7 +447,7 @@ struct string_list* __rvg_get_subreddit(struct reddit_ctx* ctx, char* subreddit)
     return result_list;
 }
 
-struct string_list* __rvg_get_subreddit_threads(struct reddit_ctx* ctx, char* subreddit)
+struct string_list* __rvg_get_subreddit_threads(struct reddit_ctx* ctx, char* subreddit, struct string_list* thread_names)
 {
     struct string_list thread_list;
     thread_list.size = 0;
@@ -477,11 +477,19 @@ struct string_list* __rvg_get_subreddit_threads(struct reddit_ctx* ctx, char* su
     struct string_list* thread_list_json = (struct string_list*)malloc(sizeof(struct string_list));
     thread_list_json->size = 0;
 
+    if (thread_names) {
+        thread_names->list = (char**)malloc(sizeof(char*) * thread_list.size);
+        thread_names->size = thread_list.size;
+    }
+
     for (int i = 0; i < thread_list.size; i++) {
         char url[256];
         sprintf(url, REDDIT_PERMALINK_URL_FORMAT, thread_list.list[i]);
 
-        char* thread_name = get_thread_name(thread_list.list[i]);
+        if (thread_names) {
+            char* thread_name = get_thread_name(thread_list.list[i]);
+            thread_names->list[i] = strdup(thread_name);
+        }
 
         char header_useragent[1024] = { 0 };
         char header_authorization[1024] = { 0 };
