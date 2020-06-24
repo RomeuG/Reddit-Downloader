@@ -24,7 +24,7 @@ int main(int argc, char** argv, char** envp)
     }
 
     struct stat path_stat;
-    stat(argv[1], &path_stat);
+    smmtat(argv[1], &path_stat);
 
     if (!S_ISDIR(path_stat.st_mode)) {
         fprintf(stdout, "Invalid path! Not a directory!\n");
@@ -66,9 +66,14 @@ int main(int argc, char** argv, char** envp)
         cJSON* json = cJSON_Parse(thread_list->list[i]);
         char* json_fmt = cJSON_Print(json);
 
-        write_to_file("", json_fmt);
+        char full_path[1024] = { 0 };
+        sprintf(full_path, "%s%s.json", dirname, thread_names->list[i]);
 
-        fprintf(stdout, "%s\n", json_fmt);
+        fprintf(stdout, "Thread json file path: %s\n", full_path);
+
+        //write_to_file("", json_fmt);
+
+        //fprintf(stdout, "%s\n", json_fmt);
     }
 
     return 0;
