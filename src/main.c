@@ -4,6 +4,9 @@
 
 #include <unistd.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 void write_to_file(char* filepath, char* data)
 {
     FILE* fp = fopen(filepath, "ab");
@@ -15,6 +18,19 @@ void write_to_file(char* filepath, char* data)
 
 int main(int argc, char** argv, char** envp)
 {
+    if (argc != 2) {
+        fprintf(stdout, "Invalid number of arguments!\n");
+        exit(1);
+    }
+
+    struct stat path_stat;
+    stat(argv[1], &path_stat);
+
+    if (!S_ISDIR(path_stat.st_mode)) {
+        fprintf(stdout, "Invalid path! Not a directory!\n");
+        exit(1);
+    }
+
     char* reddit_id = getenv("REDDIT_ID");
     char* reddit_secret = getenv("REDDIT_SECRET");
     char* reddit_user = getenv("REDDIT_USER");
