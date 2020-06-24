@@ -31,6 +31,17 @@ int main(int argc, char** argv, char** envp)
         exit(1);
     }
 
+    char dirname[512] = { 0 };
+    int dirlen = strlen(argv[1]);
+
+    if (argv[1][dirlen - 1] != '/') {
+        sprintf(dirname, "%s/", argv[1]);
+    } else {
+        sprintf(dirname, "%s", argv[1]);
+    }
+
+    fprintf(stdout, "Output directory: %s\n", dirname);
+
     char* reddit_id = getenv("REDDIT_ID");
     char* reddit_secret = getenv("REDDIT_SECRET");
     char* reddit_user = getenv("REDDIT_USER");
