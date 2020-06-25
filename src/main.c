@@ -16,6 +16,35 @@ void write_to_file(char* filepath, char* data)
     }
 }
 
+char* generate_full_path(char* dirname, char* thread_name)
+{
+    int duplicate = 0;
+    int tries = 1;
+
+    char* full_path = malloc(1024);
+
+    memset(full_path, 0, 1024);
+    sprintf(full_path, "%s%s.json", dirname, thread_name);
+
+    if (access(full_path, F_OK) != -1) {
+        duplicate = 1;
+    }
+
+    while (duplicate == 1) {
+        memset(full_path, 0, 1024);
+        sprintf(full_path, "%s%s_%d.json", dirname, thread_name, tries);
+
+        if (access(full_path, F_OK) != -1) {
+            duplicate = 1;
+            tries++;
+        } else {
+            duplicate = 0;
+        }
+    }
+
+    return full_path;
+}
+
 int main(int argc, char** argv, char** envp)
 {
     if (argc != 2) {
@@ -24,7 +53,7 @@ int main(int argc, char** argv, char** envp)
     }
 
     struct stat path_stat;
-    smmtat(argv[1], &path_stat);
+    stat(argv[1], &path_stat);
 
     if (!S_ISDIR(path_stat.st_mode)) {
         fprintf(stdout, "Invalid path! Not a directory!\n");
@@ -66,14 +95,9 @@ int main(int argc, char** argv, char** envp)
         cJSON* json = cJSON_Parse(thread_list->list[i]);
         char* json_fmt = cJSON_Print(json);
 
-        char full_path[1024] = { 0 };
-        sprintf(full_path, "%s%s.json", dirname, thread_names->list[i]);
+        char* full_path = generate_full_path(dirname, thread_names->list[i]);
 
-        fprintf(stdout, "Thread json file path: %s\n", full_path);
-
-        //write_to_file("", json_fmt);
-
-        //fprintf(stdout, "%s\n", json_fmt);
+        write_to_file(full_path, json_fmt);
     }
 
     return 0;
