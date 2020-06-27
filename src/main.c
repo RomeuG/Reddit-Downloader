@@ -7,6 +7,48 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include <argp.h>
+#include <getopt.h>
+
+struct arg_opts {
+    char* argr;
+    char* argo;
+    int optr;
+    int opto;
+};
+
+struct arg_opts pargs = { 0 };
+
+const char* argp_program_version = "redditdownloader.0.0.1";
+const char* argp_program_bug_address = "<romeu.bizz@gmail.com>";
+static char doc[] = "Software to download reddit threads/subreddits/etc.";
+static char args_doc[] = "[FILENAME]...";
+static struct argp_option options[] = {
+    { "outdir", 'o', "dir", 0, "Output directory." },
+    { "subreddit", 'r', "sub", 0, "Select subreddit." },
+    { 0 }
+};
+
+error_t argp_parseopts(int key, char* arg, struct argp_state* state)
+{
+    switch (key) {
+        case 'o':
+            pargs.opto = 1;
+            pargs.argo = strdup(arg);
+            break;
+        case 'r':
+            pargs.optr = 1;
+            pargs.argr = strdup(arg);
+            break;
+        case ARGP_KEY_ARG:
+            return 0;
+        default:
+            return ARGP_ERR_UNKNOWN;
+    }
+
+    return 0;
+}
+
 void write_to_file(char* filepath, char* data)
 {
     FILE* fp = fopen(filepath, "ab");
@@ -47,13 +89,16 @@ char* generate_full_path(char* dirname, char* thread_name)
 
 int main(int argc, char** argv, char** envp)
 {
-    if (argc != 2) {
-        fprintf(stdout, "Invalid number of arguments!\n");
+    static struct argp argp = { options, argp_parseopts, args_doc, doc, 0, 0, 0 };
+    argp_parse(&argp, argc, argv, 0, 0, &pargs);
+
+    if (!pargs.opto || !pargs.optr) {
+        fprintf(stdout, "Required options missing!\n");
         exit(1);
     }
 
     struct stat path_stat;
-    stat(argv[1], &path_stat);
+    stat(pargs.argo, &path_stat);
 
     if (!S_ISDIR(path_stat.st_mode)) {
         fprintf(stdout, "Invalid path! Not a directory!\n");
@@ -61,12 +106,12 @@ int main(int argc, char** argv, char** envp)
     }
 
     char dirname[512] = { 0 };
-    int dirlen = strlen(argv[1]);
+    int dirlen = strlen(pargs.argo);
 
-    if (argv[1][dirlen - 1] != '/') {
-        sprintf(dirname, "%s/", argv[1]);
+    if (pargs.argo[dirlen - 1] != '/') {
+        sprintf(dirname, "%s/", pargs.argo);
     } else {
-        sprintf(dirname, "%s", argv[1]);
+        sprintf(dirname, "%s", pargs.argo);
     }
 
     fprintf(stdout, "Output directory: %s\n", dirname);
@@ -89,7 +134,7 @@ int main(int argc, char** argv, char** envp)
     __rvg_get_access_token(&reddit);
 
     struct string_list* thread_names = malloc(sizeof(struct string_list));
-    struct string_list* thread_list = __rvg_get_subreddit_threads(&reddit, "emacs", thread_names);
+    struct string_list* thread_list = __rvg_get_subreddit_threads(&reddit, pargs.argr, thread_names);
 
     for (int i = 0; i < thread_list->size; i++) {
         cJSON* json = cJSON_Parse(thread_list->list[i]);
