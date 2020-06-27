@@ -120,6 +120,7 @@ int main(int argc, char** argv, char** envp)
     char* reddit_secret = getenv("REDDIT_SECRET");
     char* reddit_user = getenv("REDDIT_USER");
     char* reddit_pass = getenv("REDDIT_PASS");
+    char* reddit_useragent = getenv("REDDIT_USERAGENT");
 
     struct reddit_ctx reddit;
 
@@ -129,7 +130,7 @@ int main(int argc, char** argv, char** envp)
     rvg_reddit_set_secret(&reddit, reddit_secret);
     rvg_reddit_set_username(&reddit, reddit_user);
     rvg_reddit_set_password(&reddit, reddit_pass);
-    rvg_reddit_set_useragent(&reddit, "shell:Typescript-App:v0.0.1 (by /u/plasticooo)");
+    rvg_reddit_set_useragent(&reddit, reddit_useragent);
 
     __rvg_get_access_token(&reddit);
 
