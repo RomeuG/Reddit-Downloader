@@ -51,6 +51,8 @@ struct reddit_ctx {
     char* user_agent;
     char* username;
     char* password;
+
+    char* subreddit;
 };
 
 static inline void access_token_check_sleep(struct reddit_ctx* ctx)
@@ -372,7 +374,7 @@ static int curl_execute_request(struct reddit_ctx* ctx, char* url, struct curl_s
 
         while (after_str[0] != 0) {
             char new_url[1024] = { 0 };
-            sprintf(new_url, REDDIT_SUBREDDIT_AFTER_JSON_URL_FORMAT, "emacs", after_str);
+            sprintf(new_url, REDDIT_SUBREDDIT_AFTER_JSON_URL_FORMAT, ctx->subreddit, after_str);
 
             free(response.memory);
 
@@ -423,7 +425,7 @@ void __rvg_get_access_token(struct reddit_ctx* ctx)
     free(authorization_b64);
 }
 
-struct string_list* __rvg_get_subreddit(struct reddit_ctx* ctx, char* subreddit)
+struct string_list* __rvg_get_subreddit(struct reddit_ctx* ctx)
 {
     struct string_list* result_list;
 
@@ -431,7 +433,7 @@ struct string_list* __rvg_get_subreddit(struct reddit_ctx* ctx, char* subreddit)
     char header_useragent[1024] = { 0 };
     char header_authorization[1024] = { 0 };
 
-    sprintf(url, REDDIT_SUBREDDIT_JSON_URL_FORMAT, subreddit);
+    sprintf(url, REDDIT_SUBREDDIT_JSON_URL_FORMAT, ctx->subreddit);
     sprintf(header_useragent, HEADER_USERAGENT_FORMAT, ctx->user_agent);
     sprintf(header_authorization, HEADER_AUTHORIZATION_BEARER_FORMAT, ctx->access_token.token);
 
@@ -447,14 +449,14 @@ struct string_list* __rvg_get_subreddit(struct reddit_ctx* ctx, char* subreddit)
     return result_list;
 }
 
-struct string_list* __rvg_get_subreddit_threads(struct reddit_ctx* ctx, char* subreddit, struct string_list* thread_names)
+struct string_list* __rvg_get_subreddit_threads(struct reddit_ctx* ctx, struct string_list* thread_names)
 {
     struct string_list thread_list;
     thread_list.size = 0;
 
-    struct string_list* subreddit_pages = __rvg_get_subreddit(ctx, subreddit);
+    struct string_list* subreddit_pages = __rvg_get_subreddit(ctx);
 
-    fprintf(stdout, "There are %d pages in %s subreddit\n", subreddit_pages->size, subreddit);
+    fprintf(stdout, "There are %d pages in %s subreddit\n", subreddit_pages->size, ctx->subreddit);
 
     for (int i = 0; i < subreddit_pages->size; i++) {
         char* page_json = subreddit_pages->list[i];
@@ -548,6 +550,11 @@ void rvg_reddit_set_password(struct reddit_ctx* ctx, char* password)
 void rvg_reddit_set_useragent(struct reddit_ctx* ctx, char* user_agent)
 {
     ctx->user_agent = strdup(user_agent);
+}
+
+void rvg_reddit_set_subreddit(struct reddit_ctx* ctx, char* subreddit)
+{
+    ctx->subreddit = strdup(subreddit);
 }
 
 void rvg_reddit_free(struct reddit_ctx* ctx)

@@ -131,11 +131,12 @@ int main(int argc, char** argv, char** envp)
     rvg_reddit_set_username(&reddit, reddit_user);
     rvg_reddit_set_password(&reddit, reddit_pass);
     rvg_reddit_set_useragent(&reddit, reddit_useragent);
+    rvg_reddit_set_subreddit(&reddit, pargs.argr);
 
     __rvg_get_access_token(&reddit);
 
     struct string_list* thread_names = malloc(sizeof(struct string_list));
-    struct string_list* thread_list = __rvg_get_subreddit_threads(&reddit, pargs.argr, thread_names);
+    struct string_list* thread_list = __rvg_get_subreddit_threads(&reddit, thread_names);
 
     for (int i = 0; i < thread_list->size; i++) {
         cJSON* json = cJSON_Parse(thread_list->list[i]);
